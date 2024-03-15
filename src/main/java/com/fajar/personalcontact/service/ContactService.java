@@ -21,5 +21,6 @@ public interface ContactService {
 
     Page<Contact> getContactsPerPage(Pageable pageable, ContactDTO contactDTO);
 
+    List<Contact> getContactsByName(String name);
 
 }

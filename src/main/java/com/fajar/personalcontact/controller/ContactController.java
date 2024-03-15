@@ -80,4 +80,9 @@ public class ContactController {
         Page<Contact> resultPage = service.getContactsPerPage(pageable, contactDTO);
         return new PageResponseWrapper<>(resultPage);
     }
+    @GetMapping("/name")
+    public List<Contact> getContactsByName(@RequestParam("name") String name) {
+        return service.getContactsByName(name);
+    }
+
 }

@@ -2,10 +2,7 @@ package com.fajar.personalcontact.service.implementation;
 
 import com.fajar.personalcontact.dto.request.ContactDTO;
 import com.fajar.personalcontact.entity.Contact;
-import com.fajar.personalcontact.exception.DuplicateDataException;
-import com.fajar.personalcontact.exception.EmptyContactListException;
-import com.fajar.personalcontact.exception.InvalidEmailException;
-import com.fajar.personalcontact.exception.ResourceNotFoundException;
+import com.fajar.personalcontact.exception.*;
 import com.fajar.personalcontact.repository.ContactRepository;
 import com.fajar.personalcontact.service.ContactService;
 import com.fajar.personalcontact.util.specification.ContactSpecification;
@@ -73,10 +70,13 @@ public class ContactServiceImpl implements ContactService {
 
     @Override
     public void deleteContact(String id) {
-        Contact contact = repository.findById(id)
-                .orElseThrow(() -> new  ResourceNotFoundException("Contact", "id", id));
-        repository.delete(contact);
-
+        repository.findById(id)
+                .ifPresentOrElse(
+                        repository::delete,
+                        () -> {
+                            throw new ResourceNotFoundException("Contact", "id", id);
+                        }
+                );
     }
 
     @Override
@@ -88,14 +88,27 @@ public class ContactServiceImpl implements ContactService {
             throw new ResourceNotFoundException("Contact", "id", id);
         }
     }
-
     @Override
     public Page<Contact> getContactsPerPage(Pageable pageable, ContactDTO contactDTO) {
         Specification<Contact> contactSpecification = ContactSpecification.getSpecification(contactDTO);
-        return repository.findAll(contactSpecification, pageable);
+        Page<Contact> contacts = repository.findAll(contactSpecification, pageable);
+        if (contacts.isEmpty()) {
+            throw new NoContactsFoundException();
+        }
+        return contacts;
     }
+
 
     private boolean isValidEmail(String email) {
         return email != null && EMAIL_PATTERN.matcher(email).matches();
     }
+    @Override
+    public List<Contact> getContactsByName(String name) {
+        List<Contact> contacts = repository.findByNativeQueryNameContainingIgnoreCase(name.toLowerCase());
+        if (contacts.isEmpty()) {
+            throw new ResourceNotFoundException("Contact", "name", name);
+        }
+        return contacts;
+    }
+
 }
