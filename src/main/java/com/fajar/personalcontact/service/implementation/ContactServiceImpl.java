@@ -7,6 +7,7 @@ import com.fajar.personalcontact.repository.ContactRepository;
 import com.fajar.personalcontact.service.ContactService;
 import com.fajar.personalcontact.util.specification.ContactSpecification;
 import jakarta.transaction.Transactional;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.fajar.personalcontact.util.constant.ValidationConstant.EMAIL_PATTERN;
 
@@ -21,18 +23,23 @@ import static com.fajar.personalcontact.util.constant.ValidationConstant.EMAIL_P
 public class ContactServiceImpl implements ContactService {
 
     private final ContactRepository repository;
+    private final ModelMapper modelMapper;
 
-    public ContactServiceImpl(ContactRepository repository) {
+
+    public ContactServiceImpl(ContactRepository repository, ModelMapper modelMapper) {
         this.repository = repository;
+        this.modelMapper = modelMapper;
     }
 
     @Override
-    public List<Contact> getAllContacts() {
+    public List<ContactDTO> getAllContacts() {
         List<Contact> contacts = repository.findAll();
         if(contacts.isEmpty()) {
             throw new EmptyContactListException("No contacts were found");
         }
-        return repository.findAll();
+        return contacts.stream()
+                .map(contact -> modelMapper.map(contact, ContactDTO.class))
+                .collect(Collectors.toList());
     }
 
     @Override

@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface ContactService {
 
-    List<Contact> getAllContacts();
+    List<ContactDTO> getAllContacts();
 
     Contact createContact(Contact contact);
 

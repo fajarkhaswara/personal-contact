@@ -31,14 +31,12 @@ public class ContactController {
 
     @GetMapping
     private List<ContactDTO> getAllContacts() {
-        return service.getAllContacts().stream().map(contact -> modelMapper.map(contact, ContactDTO.class))
-                .collect(Collectors.toList());
+        return service.getAllContacts();
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ContactDTO> getContactById(@PathVariable(name = "id")String id) {
         Contact contact = service.getContactById(id);
-
         ContactDTO response = modelMapper.map(contact, ContactDTO.class);
         return ResponseEntity.ok().body(response);
     }
@@ -80,6 +78,7 @@ public class ContactController {
         Page<Contact> resultPage = service.getContactsPerPage(pageable, contactDTO);
         return new PageResponseWrapper<>(resultPage);
     }
+
     @GetMapping("/name")
     public List<Contact> getContactsByName(@RequestParam("name") String name) {
         return service.getContactsByName(name);
